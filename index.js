@@ -3,6 +3,7 @@ require('dotenv').config()
 const connectionURI = process.env.MONGO_DB_URI
 const environment = process.env.NODE_ENV
 const userRouter = require('./controller/userController')
+const loginRouter = require('./controller/loginController')
 const handleError = require('./middleware/handleError')
 const notFound = require('./middleware/notFound')
 const express = require('express')
@@ -16,6 +17,7 @@ app.use(cors())
 
 databaseConnection(connectionURI, environment)
 
+app.use('/api/login', loginRouter)
 app.use('/api/users', userRouter)
 
 app.use(handleError)
