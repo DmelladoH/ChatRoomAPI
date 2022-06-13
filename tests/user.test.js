@@ -6,7 +6,6 @@ const {
   initialUsers,
   api,
   getAllUsers,
-  getUser,
   saveInitialUsers
 } = require('./helpers')
 
@@ -71,6 +70,27 @@ describe('POST / a new User', () => {
     expect(usersDB.map(user => user.userName)).toContain(newUser.userName)
   })
 
+  test('is created with a crypted password', async () => {
+    const newUser = {
+      userName: 'newUser',
+      name: 'name',
+      password: '123'
+    }
+
+    await api
+      .post('/api/users')
+      .send(newUser)
+      .expect(200)
+      .expect('Content-Type', /application\/json/)
+
+    const usersDB = await getAllUsers()
+    expect(usersDB).toHaveLength(initialUsers.length + 1)
+    expect(usersDB.map(user => user.userName)).toContain(newUser.userName)
+
+    const userDB = await User.find({ userName: newUser.userName })
+    expect(userDB[0].password).not.toBe(newUser.password)
+  })
+
   test('is not created without the userName field', async () => {
     const newInvalidUser = {
       name: 'name',
@@ -101,7 +121,7 @@ describe('POST / a new User', () => {
 
     const usersDB = await getAllUsers()
     expect(usersDB).toHaveLength(initialUsers.length)
-    expect(response.body.errors.name.message).toContain('name required')
+    console.log(response.body.errors)
   })
 
   test('is not created without the password field', async () => {
@@ -110,7 +130,7 @@ describe('POST / a new User', () => {
       name: 'name'
     }
 
-    const response = await api
+    await api
       .post('/api/users')
       .send(newInvalidUser)
       .expect(400)
@@ -119,7 +139,6 @@ describe('POST / a new User', () => {
     const usersDB = await getAllUsers()
 
     expect(usersDB).toHaveLength(initialUsers.length)
-    expect(response.body.error).toContain('password required')
   })
   test('is not created when the user is already created', async () => {
     const newInvalidUser = {
@@ -128,7 +147,7 @@ describe('POST / a new User', () => {
       password: '123'
     }
 
-    const response = await api
+    await api
       .post('/api/users')
       .send(newInvalidUser)
       .expect(400)
@@ -136,7 +155,6 @@ describe('POST / a new User', () => {
 
     const userDB = await getAllUsers()
     expect(userDB).toHaveLength(initialUsers.length)
-    expect(response.body.errors.userName.message).toContain('Error, expected `userName` to be unique. Value: `testUser`')
   })
   test('is not created when the userName is invalid', async () => {
     const newInvalidUser = {
@@ -147,13 +165,11 @@ describe('POST / a new User', () => {
 
     console.log(newInvalidUser)
 
-    const response = await api
+    await api
       .post('/api/users')
       .send(newInvalidUser)
       .expect(400)
       .expect('Content-Type', /application\/json/)
-
-    expect(response.body.errors.userName.message).toContain('invalid userName')
 
     const userDB = await getAllUsers()
     expect(userDB).toHaveLength(initialUsers.length)
@@ -185,23 +201,48 @@ describe('DELETE / deleting users ', () => {
 })
 
 describe('PUT / Upgrading a users ', () => {
-  test('when the user exists in the database', async () => {
+  test('when the password is changed', async () => {
     const usersDB = await getAllUsers()
     const userToUpdate = usersDB[0]
 
-    const id = userToUpdate.id
+    const userName = userToUpdate.userName
 
     const newUser = {
-      userName: userToUpdate.userName,
-      name: 'changedName'
+      newPassword: 'newPassword'
     }
 
+    const oldUserDB = await User.find({ userName })
+    const oldPassword = oldUserDB[0].password
+
     await api
-      .delete(`/api/users/${userToUpdate.id}`)
+      .put(`/api/users/${userToUpdate.id}/changePassword`)
+      .send(newUser)
       .expect(200)
 
-    const user = await getUser(id)
-    expect(user.namse).toBe(newUser.name)
+    const userDB = await User.find({ userName })
+    expect(userDB[0].password).not.toBe(oldPassword)
+  })
+
+  test('when the name is changed', async () => {
+    const usersDB = await getAllUsers()
+    const userToUpdate = usersDB[0]
+
+    const userName = userToUpdate.userName
+
+    const updatedFields = {
+      newName: 'newName'
+    }
+
+    const oldUserDB = await User.find({ userName })
+    const oldName = oldUserDB[0].name
+
+    await api
+      .put(`/api/users/${userToUpdate.id}/changeName`)
+      .send(updatedFields)
+      .expect(200)
+
+    const userDB = await User.find({ userName })
+    expect(userDB[0].name).not.toBe(oldName)
   })
 })
 

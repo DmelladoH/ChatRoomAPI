@@ -36,4 +36,4 @@ const getUser = async (id) => {
   return userDB.map(user => user.toJSON())
 }
 
-module.exports = { initialUsers, saveInitialUsers, getAllUsers, getUser }
+module.exports = { api, initialUsers, saveInitialUsers, getAllUsers, getUser }
