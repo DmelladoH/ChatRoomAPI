@@ -246,7 +246,8 @@ describe('PUT / Upgrading a users ', () => {
   })
 })
 
+// afterAll(() => mongoose.disconnect())
 afterAll(() => {
-  mongoose.connection.close()
+  mongoose.disconnect()
   server.close()
 })
