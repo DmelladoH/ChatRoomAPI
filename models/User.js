@@ -5,6 +5,7 @@ const userSchema = new Schema({
   userName: {
     type: String,
     unique: true,
+    match: [/^[a-zA-Z0-9]+$/, 'is invalid'],
     required: [true, 'userName required']
 
   },
@@ -15,15 +16,11 @@ const userSchema = new Schema({
   password: {
     type: String,
     required: [true, 'password required']
-  },
-  contacts: [{
-    type: Schema.Types.ObjectId,
-    ref: 'Contact'
-  }]
+  }
 })
 
 userSchema.set('toJSON', {
-  transform: (documentm, returnedObject) => {
+  transform: (document, returnedObject) => {
     returnedObject.id = returnedObject._id
     delete returnedObject.__v
     delete returnedObject._id
