@@ -1,7 +1,8 @@
 const supertest = require('supertest')
 const { app } = require('../index')
 const User = require('../models/User')
-const jwt = require('jsonwebtoken')
+const bcrypt = require('bcrypt')
+
 const mongoose = require('mongoose')
 const api = supertest(app)
 
@@ -20,7 +21,13 @@ const initialUsers = [
 
 const saveInitialUsers = async () => {
   for (const user of initialUsers) {
-    const userObj = new User(user)
+    const userDb = {
+      userName: user.userName,
+      name: user.name,
+      password: await bcrypt.hash(user.password, 10)
+    }
+
+    const userObj = new User(userDb)
     await userObj.save()
   }
 }
