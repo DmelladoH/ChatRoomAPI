@@ -161,6 +161,7 @@ describe('POST / a new User', () => {
     const newInvalidUser = {
       userName: initialUsers[0].userName,
       name: initialUsers[0].name,
+
       password: '123'
     }
 

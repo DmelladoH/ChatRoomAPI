@@ -20,6 +20,7 @@ describe('Login', () => {
       .post('/api/login')
       .send(userAccess)
       .expect(200)
+      .expect('Content-Type', /application\/json/)
 
     expect(response.body.token).not.toBe(undefined)
   })
@@ -34,6 +35,7 @@ describe('Login', () => {
       .post('/api/login')
       .send(userAccess)
       .expect(401)
+      .expect('Content-Type', /application\/json/)
 
     expect(response.body.token).toBe(undefined)
   })
@@ -50,6 +52,7 @@ describe('Login', () => {
       .post('/api/login')
       .send(userAccess)
       .expect(401)
+      .expect('Content-Type', /application\/json/)
 
     expect(response.body.token).toBe(undefined)
   })
