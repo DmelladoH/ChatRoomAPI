@@ -16,7 +16,11 @@ const userSchema = new Schema({
   password: {
     type: String,
     required: [true, 'password required']
-  }
+  },
+  rooms: [{
+    type: Schema.Types.ObjectId,
+    ref: 'Room'
+  }]
 })
 
 userSchema.set('toJSON', {
