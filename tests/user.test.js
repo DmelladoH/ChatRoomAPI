@@ -42,11 +42,11 @@ describe('GET / getting', () => {
   })
 
   test('an error when the id is not valid', async () => {
-    const invalidId = 12345678
+    const invalidId = mongoose.Types.ObjectId('62a84d69e70f7d09cb06e25b')
 
     await api
       .get(`/api/users/${invalidId}`)
-      .expect(400)
+      .expect(404)
       .expect('Content-Type', /application\/json/)
   })
 })
@@ -62,7 +62,7 @@ describe('POST / a new User', () => {
     await api
       .post('/api/users')
       .send(newUser)
-      .expect(200)
+      .expect(201)
       .expect('Content-Type', /application\/json/)
 
     const usersDB = await getAllUsers()
@@ -80,7 +80,7 @@ describe('POST / a new User', () => {
     await api
       .post('/api/users')
       .send(newUser)
-      .expect(200)
+      .expect(201)
       .expect('Content-Type', /application\/json/)
 
     const usersDB = await getAllUsers()
@@ -140,11 +140,11 @@ describe('POST / a new User', () => {
 
     expect(usersDB).toHaveLength(initialUsers.length)
   })
-  test('is not created when the user is already created', async () => {
+  test('is not created when the userName is invalid', async () => {
     const newInvalidUser = {
-      userName: initialUsers[0].userName,
-      name: initialUsers[0].name,
-      password: '123'
+      userName: 'invalid user',
+      name: 'name',
+      password: 'pass'
     }
 
     await api
@@ -156,19 +156,18 @@ describe('POST / a new User', () => {
     const userDB = await getAllUsers()
     expect(userDB).toHaveLength(initialUsers.length)
   })
-  test('is not created when the userName is invalid', async () => {
+
+  test('is not created when the user is already created', async () => {
     const newInvalidUser = {
-      userName: 'a a',
-      name: 'name',
+      userName: initialUsers[0].userName,
+      name: initialUsers[0].name,
       password: '123'
     }
-
-    console.log(newInvalidUser)
 
     await api
       .post('/api/users')
       .send(newInvalidUser)
-      .expect(400)
+      .expect(409)
       .expect('Content-Type', /application\/json/)
 
     const userDB = await getAllUsers()
@@ -246,7 +245,6 @@ describe('PUT / Upgrading a users ', () => {
   })
 })
 
-// afterAll(() => mongoose.disconnect())
 afterAll(() => {
   mongoose.disconnect()
   server.close()
