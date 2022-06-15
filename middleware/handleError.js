@@ -7,9 +7,6 @@ module.exports = (error, req, res, next) => {
 
   if (error.status === undefined) error.status = 500
 
-  console.log(error.name)
-  console.log(error.status)
-  console.log(error.message)
-
+  console.log(error)
   res.status(error.status).send({ error: error.message }).end()
 }
