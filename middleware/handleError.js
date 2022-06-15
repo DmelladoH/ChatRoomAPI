@@ -1,13 +1,15 @@
-
-const ERROR_MAP = {
-  CastError: res => res.status(400).send({ error: 'id used is malformed' }),
-  ValidationError: res => res.status(400).send({ error: 'some inputs are missed' }),
-  defaultError: res => res.status(500).end()
-}
+const ValidatorError = require('../Errors/ValidatorError')
 
 module.exports = (error, req, res, next) => {
-  console.log(error)
-  const handler = ERROR_MAP[error.name] || ERROR_MAP.defaultError
+  if (error.name === 'ValidationError' || error.name === 'CastError') {
+    error = new ValidatorError(error.message)
+  }
 
-  handler(res, error)
+  if (error.status === undefined) error.status = 500
+
+  console.log(error.name)
+  console.log(error.status)
+  console.log(error.message)
+
+  res.status(error.status).send({ error: error.message }).end()
 }
