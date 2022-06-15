@@ -2,6 +2,8 @@ const bcrypt = require('bcrypt')
 const userRouter = require('express').Router()
 const mongoose = require('mongoose')
 const User = require('../models/User')
+const ConflictError = require('../Errors/ConflictError')
+const NotFound = require('../Errors/NotFoundError')
 
 userRouter.get('/', async (request, response) => {
   const user = await User.find({})
@@ -13,6 +15,9 @@ userRouter.get('/:id', async (request, response, next) => {
 
   try {
     const user = await User.findById(id)
+
+    if (user === null) { next(new NotFound('user not found')) }
+
     response.json(user)
   } catch (err) {
     next(err)
@@ -25,14 +30,21 @@ userRouter.post('/', async (request, response, next) => {
   let passwordHash = null
 
   try {
-    if (body.password) { passwordHash = await bcrypt.hash(body.password, saltRounds) }
+    let user = await User.findOne({ userName: body.userName })
 
-    const user = new User({
+    if (user !== null) {
+      return next(new ConflictError('userName already exits'))
+    }
+
+    if (body.password) { passwordHash = await bcrypt.hash(body.password, saltRounds) }
+    user = new User({
       userName: body.userName,
       name: body.name,
       password: passwordHash
     })
+
     const savedUser = await user.save()
+    response.status(201)
     response.json(savedUser)
   } catch (err) {
     next(err)
